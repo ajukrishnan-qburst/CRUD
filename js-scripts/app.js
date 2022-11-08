@@ -1,11 +1,12 @@
 // localStorage.clear();
-if (localStorage.getItem("idCountJson") === null)
-{
-    let idCount = 7
-    localStorage.setItem("idCountJson", JSON.stringify(idCount));
+// ================================== IDCOUNT INTIAL VALUE ASSIGNMENT ======================================================
+initIdCount();
+function initIdCount() {
+    if (!(localStorage.getItem("idCountJson"))) {
+        let idCount = 6
+        localStorage.setItem("idCountJson", JSON.stringify(idCount));
+    }
 }
-    
-
 
 // =============================== FETCHING DATA FROM employee_details.json FILE ===========================================
 const getTableData = () => {
@@ -13,35 +14,35 @@ const getTableData = () => {
         .then(response => response.json())
         .then(data => {
             localStorage.setItem("employeeData", JSON.stringify(data));
-
+            sortEmployeeData()
         });
 }
 
-
-// ===================== CONDITION TO CHECK WHETHER THE LOCALSTORAGE IS EMPTY OR NOT =====================================
-
-localStorage.getItem("employeeData") === null && getTableData();
-
-
-
-
 // =============================== FETCHING DATA FROM skills.json FILE ===================================================
-
 const getSkillsData = () => {
     fetch('json-files/skills.json')
         .then(response => response.json())
         .then(data => {
             localStorage.setItem("skillsData", JSON.stringify(data));
-
+            skillDataList()
         });
 }
-getSkillsData();
 
+// ===================== CONDITION TO CHECK WHETHER THE LOCALSTORAGE IS EMPTY OR NOT =====================================
+initData();
 
-
+function initData() {
+    if (!(localStorage.getItem("employeeData"))) {
+        getTableData();
+        getSkillsData();
+    }
+    else {
+        listTables();
+        sortEmployeeData();
+    }
+}
 
 // =============================== CREATING OPTION TAG FROM THE SKILLS LIST FETCHED =======================================
-
 function skillDataList() {
     const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
     let skillList = document.querySelector("#skills-dropdown");
@@ -52,16 +53,13 @@ function skillDataList() {
         skillList.appendChild(options)
     })
 }
-
 skillDataList()
 
 // =============================== LISTING THE JSON DATA INTO TABLE =======================================================
-
-
 function listTables() {
     const tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
     const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
-    const parent = document.querySelector("#table-body-container");
+    const parent = document.getElementById("table-body-container");
 
     tableDataJson.forEach((rowData) => {
         let tableRow = document.createElement("tr");
@@ -106,18 +104,15 @@ function listTables() {
         updateModalBox();
         deleteMsgBox();
 
-    }); 
+    });
 }
 
-
 // =============================== ADD MODAL BOX AND CONFIRMATION BOX FUNCTIONALITY ======================================
-
 function addModalBox() {
-    const modal = document.querySelector("#add-modal")
-    const addBtn = document.querySelector("#add-button")
+    const modal = document.getElementById("add-modal")
+    const addBtn = document.getElementById("add-button")
     const closeBtn = modal.querySelector(".close-btn")
-    const submitBtn = modal.querySelector(".btn")
-    const successModal = document.querySelector("#success-box")
+    const successModal = document.getElementById("success-box")
     const successCloseBtn = successModal.querySelector(".close-btn")
     addBtn.addEventListener("click", () => {
         modal.style.display = "block";
@@ -125,44 +120,38 @@ function addModalBox() {
     });
     closeBtn.addEventListener("click", () => {
         tags = [];
-        let input = document.querySelector("#skills-input");
-        input.value = "";
+        addForm.reset();
         modal.style.display = "none";
 
     });
-    submitBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        successModal.style.display = "block"
-    });
+
+    document.querySelector("#submit-add-btn").addEventListener('click', addEmployees);
+
 
     successCloseBtn.addEventListener("click", () => {
         successModal.style.display = "none";
         tags = [];
         let idCount = JSON.parse(localStorage.getItem("idCountJson"));
-        idCount+=1
-        localStorage.setItem("idCountJson", JSON.stringify(idCount));  
-        window.location.reload();
+        idCount += 1
+        localStorage.setItem("idCountJson", JSON.stringify(idCount));
     });
 
-    window.addEventListener("click", (event) => {
+    modal.addEventListener("click", (event) => {
         event.target == modal && (modal.style.display = "none");
     });
-    document.querySelector("#submit-add-btn").addEventListener('click', addEmployees);
-}
 
+}
 addModalBox()
 
-
 // =============================== UPDATE MODAL BOX AND CONFIRMATION BOX FUNCTIONALITY ===================================
-
 function updateModalBox() {
-    const modal = document.querySelector("#update-modal")
+    const modal = document.getElementById("update-modal")
     const updateBtn = document.querySelectorAll(".update-button")
     const closeBtn = modal.querySelector(".close-btn")
-    const submitBtn = modal.querySelector(".btn")
-    const successModal = document.querySelector("#update-box")
+    const successModal = document.getElementById("update-box")
     const successCloseBtn = successModal.querySelector(".close-btn")
-    const inputUpdate = modal.querySelector(".tag-container input");
+    const updateForm = document.getElementById("update-form");
+
 
     let id;
     updateBtn.forEach(item => {
@@ -170,41 +159,34 @@ function updateModalBox() {
             modal.style.display = "block";
             id = item.getAttribute("data-id")
             employeeDataDisplay(id);
+            skillsView(id);
 
         });
     });
     closeBtn.addEventListener("click", () => {
         modal.style.display = "none";
-        inputUpdate.value = "";
-        window.location.reload();
-        
+        updateForm.reset();
+
     });
-    submitBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        successModal.style.display = "block"
-          
-    });
+
     successCloseBtn.addEventListener("click", () => {
         window.location.reload();
         successModal.style.display = "none"
     });
-    window.addEventListener("click", (event) => {
+    modal.addEventListener("click", (event) => {
         event.target == modal && (modal.style.display = "none");
     });
 
 }
 updateModalBox();
 
-
 // =============================== DELETE CONFIRMATION BOX FUNCTIONALITY ==================================================
-
-
 function deleteMsgBox() {
-    const modal = document.querySelector("#confirmation-box");
+    const modal = document.getElementById("confirmation-box");
     const deleteBtn = document.querySelectorAll(".delete-button")
     const closeBtn = modal.querySelector(".close-btn");
-    const noBtn = modal.querySelector("#no-btn");
-    const yesBtn = modal.querySelector("#yes-btn");
+    const noBtn = document.getElementById("no-btn");
+    const yesBtn = document.getElementById("yes-btn");
     deleteBtn.forEach(item => {
         item.addEventListener("click", () => {
             modal.style.display = "block";
@@ -214,7 +196,7 @@ function deleteMsgBox() {
     });
     closeBtn.addEventListener("click", () => {
         modal.style.display = "none"
-        
+
     });
 
     noBtn.addEventListener("click", () => {
@@ -224,125 +206,68 @@ function deleteMsgBox() {
         modal.style.display = "none"
     });
 
-    window.addEventListener("click", (event) => {
+    modal.addEventListener("click", (event) => {
         event.target == modal && (modal.style.display = "none");
     });
 }
-
 deleteMsgBox();
 
-
-// ====================================== SELFINCREMENT ID =================================================================================
-
+// ====================================== SELFINCREMENT ID ==============================================================
 function idShow() {
     idCount = JSON.parse(localStorage.getItem("idCountJson"));
-    console.log(idCount)
     document.getElementById("id-input").value = idCount;
-    
 }
-
 
 // ================================== SAVING VALUES OF THE ADDED EMPLOYE TO PUSH =========================================
-
-
 function addEmployees(ev) {
-    console.log(idCount)
-    const addForm = document.querySelector("#add-form")
-    const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
-    ev.preventDefault();
-    let skillIdArr = [];
-    let skillNameArr = [];
-    addForm.querySelectorAll(".tagSpan").forEach(item => {
-        let value = item.getAttribute('data-id')
-        skillNameArr.push(value)
-    })
-    skillsDataJson.forEach(skill => {
-        skillNameArr.forEach(skills => {
-            if (skills === skill.skill_name) {
-                skillIdArr.push(skill.skill_id)
-            }
-        })
-
-    });
-    let employee = {
-        employee_id: document.getElementById("id-input").value,
-        employee_name: document.getElementById("name-input").value,
-        designation: document.getElementById("designation-input").value,
-        experience: document.getElementById("experience-input").value,
-        email: document.getElementById("email-input").value,
-        skills: skillIdArr
-    }
-    pushEmplyoee(employee)
-    
-    addForm.reset();
-}
-
-
-
-// ==================================== PUSH THE ADDED DATA TO TABLE ====================================================
-
-function pushEmplyoee(rowData) {
     const tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
     const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
-    tableDataJson.push(rowData);
-    localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
-    
-    let parent = document.querySelector("#table-body-container")
+    const successModal = document.getElementById("success-box")
+    const modal = document.getElementById("add-modal")
+    const mailVal = document.getElementById("email-input").value;
+    const nameVal = document.getElementById("name-input").value;
+    let value = formValidation(mailVal, nameVal);
 
-    let tableRow = document.createElement("tr");
-    let skillRow = document.createElement("td");
-    skillRow.setAttribute("class", "skillsBox")
-    let buttonRow = document.createElement("td");
-    let updateBtn = document.createElement("i");
-    let deleteBtn = document.createElement("i");
+    if (value) {
+        ev.preventDefault();
+        let skillIdArr = [];
+        let skillNameArr = [];
+        document.querySelectorAll(".tagSpan").forEach(item => {
+            let value = item.getAttribute('data-id')
+            skillNameArr.push(value)
+        })
+        skillsDataJson.forEach(skill => {
+            skillNameArr.forEach(skills => {
+                if (skills === skill.skill_name) {
+                    skillIdArr.push(skill.skill_id)
+                }
+            })
 
-    tableRow.innerHTML = `<td>${rowData.employee_id}</td>
-        <td>${rowData.employee_name}</td>
-        <td>${rowData.designation}</td>
-        <td>${rowData.email}</td>`;
-
-    rowData.skills.forEach((skillData) => {
-        let spanTag = document.createElement("span");
-        let length = rowData.skills.length;
-        if ((length - 1) == rowData.skills.indexOf(skillData)) {
-            skillsDataJson.forEach((data) => {
-                skillData == data.skill_id && (spanTag.innerHTML = data.skill_name);
-            });
+        });
+        let employee = {
+            employee_id: document.getElementById("id-input").value,
+            employee_name: document.getElementById("name-input").value,
+            designation: document.getElementById("designation-input").value,
+            experience: document.getElementById("experience-input").value,
+            email: document.getElementById("email-input").value,
+            skills: skillIdArr
         }
-        else {
-            skillsDataJson.forEach((data) => {
-                skillData == data.skill_id && (spanTag.innerHTML = `${data.skill_name},`);
-            });
-        }
-        spanTag.setAttribute("class", "skillSpan");
-        skillRow.appendChild(spanTag);
-    });
 
-    updateBtn.setAttribute("class", "update-button fa-solid fa-pen-to-square");
-    updateBtn.setAttribute("data-id", `${rowData.employee_id}`);
-    deleteBtn.setAttribute("class", "delete-button fa-solid fa-trash");
-    deleteBtn.setAttribute("data-id", `${rowData.employee_id}`);
-
-    tableRow.appendChild(skillRow);
-    buttonRow.appendChild(updateBtn);
-    buttonRow.appendChild(deleteBtn);
-    tableRow.appendChild(buttonRow);
-    parent.appendChild(tableRow);
-    updateModalBox()
-    deleteMsgBox()
-
+        tableDataJson.push(employee);
+        localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
+        reloadTable();
+        addForm.reset();
+        modal.style.display = "none";
+        successModal.style.display = "block";
+    }
 }
 
-
 // ======================== SKILLS MULTI SELECTION =====================================================================
-
-
-const addForm = document.querySelector("#add-form")
+const addForm = document.getElementById("add-form")
 const tagContainer = addForm.querySelector(".tag-container")
 const input = addForm.querySelector(".tag-container input")
 
 let tags = []
-
 
 function create(label) {
     const div = document.createElement("div");
@@ -390,7 +315,6 @@ input.addEventListener("keyup", function (e) {
     }
 });
 
-
 document.addEventListener("click", function (e) {
     if (e.target.tagName === "I") {
         const value = e.target.getAttribute("data-item");
@@ -400,31 +324,23 @@ document.addEventListener("click", function (e) {
     }
 });
 
-
 // ================================ EMPLOYEEE ROW DELEETION ===============================================================
-
-
-
 function deleteEmployee(id) {
     let deleteBtn = document.getElementById("yes-btn");
     deleteBtn.addEventListener("click", () => {
         let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
-        tableDataJson.forEach(element => {
-            if (id == element.employee_id) {
-                const index = tableDataJson.indexOf(element)
+        tableDataJson.forEach(rowData => {
+            if (id == rowData.employee_id) {
+                const index = tableDataJson.indexOf(rowData)
                 tableDataJson.splice(index, 1);
                 localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
-                window.location.reload();
+                reloadTable()
             }
         });
     })
 }
 
-
-// ================================== VIEW THE EXISTING DATA OF AN EMPLOYEEE  ===========================================
-
-
-
+// ========================== VIEW AND UPDATE EXISTING DATA OF AN EMPLOYEEE  ===========================================
 function employeeDataDisplay(id) {
     let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
     tableDataJson.forEach(rowData => {
@@ -434,44 +350,46 @@ function employeeDataDisplay(id) {
             document.getElementById("designation-input-u").value = rowData.designation;
             document.getElementById("experience-input-u").value = rowData.experience;
             document.getElementById("email-input-u").value = rowData.email;
-        
         }
-          
     });
+}
 
-// ============================================ UPDATING THE VALUES ENTERED =================================================
-    
-    skillsView(id);
-    let update = document.getElementById("submit-update-btn");
-    update.addEventListener("click", () => {
+// ================================== VALIDATING UPDATEFORM ======================================================
+function storeUpdatedValue() {
+    let id = document.getElementById("id-input-u").value;
+    let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
+    const modal = document.getElementById("update-modal")
+    const successModal = document.getElementById("update-box")
+    let mailVal = document.getElementById("email-input-u").value;
+    let nameVal = document.getElementById("name-input-u").value;
+    let value = formValidation(mailVal, nameVal);
+    if (value) {
         tableDataJson.forEach(rowData => {
             if (id == rowData.employee_id) {
                 let updatedSkills = updateSkills();
-                    rowData.employee_name = document.getElementById("name-input-u").value,
+                rowData.employee_name = document.getElementById("name-input-u").value,
                     rowData.designation = document.getElementById("designation-input-u").value,
                     rowData.experience = document.getElementById("experience-input-u").value,
-                    rowData.email = document.getElementById("email-input-u").value
-                    rowData.skills = updatedSkills;     
+                    rowData.email = document.getElementById("email-input-u").value,
+                    rowData.skills = updatedSkills;
             }
-            
         });
         localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
-    });  
+        modal.style.display = "none";
+        successModal.style.display = "block"
+    }
 }
 
-// ============================================= VIEW AND UPDATING SKILLS FUNCTIONALITY===============================================================================
-
-
-
+// ============================= VIEW AND UPDATING SKILLS FUNCTIONALITY==========================================
 function skillsView(id) {
     let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
     const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
-    const updateForm = document.querySelector("#update-form");
+    const updateForm = document.getElementById("update-form");
     const tagContainerUpdate = updateForm.querySelector(".tag-container");
     const inputUpdate = updateForm.querySelector(".tag-container input");
 
     let tagsUpdate = []
-    
+
     tableDataJson.forEach(rowData => {
         if (id == rowData.employee_id) {
             rowData.skills.forEach(skill => {
@@ -485,32 +403,16 @@ function skillsView(id) {
         }
     });
 
-
     function addTags() {
         reset();
         tagsUpdate.forEach(item => {
             const divTag = create(item);
             tagContainerUpdate.prepend(divTag);
-            
+
         });
         deleteTag()
     }
     addTags();
-   
-    function create(label) {
-        const div = document.createElement("div");
-        div.setAttribute("class", "tag");
-        const span = document.createElement("span");
-        span.setAttribute("class", "tagSpan");
-        span.setAttribute("data-id", label)
-        span.innerHTML = label;
-        const close = document.createElement("i");
-        close.setAttribute("class", "close fa-solid fa-xmark ");
-        close.setAttribute("data-item", label);
-        div.appendChild(span);
-        div.appendChild(close);
-        return div;
-    }
 
 
     function reset() {
@@ -518,8 +420,7 @@ function skillsView(id) {
             tag.parentElement.removeChild(tag);
         })
     }
-    
-    
+
     inputUpdate.addEventListener("keyup", function (e) {
         if (e.key === "Enter") {
             if (tagsUpdate.includes(inputUpdate.value) || (inputUpdate.value).length < 1) {
@@ -536,7 +437,7 @@ function skillsView(id) {
             });
         }
     });
-    
+
     function deleteTag() {
         let close = tagContainerUpdate.querySelectorAll(".tag i")
         close.forEach(item => {
@@ -545,18 +446,14 @@ function skillsView(id) {
                 const index = tagsUpdate.indexOf(value);
                 tagsUpdate.splice(index, 1);
                 addTags();
-            
             });
         });
     }
-    
-}   
+}
 
-// =================================================== GETTING UPDATED SKILLS FROM MULTISELECT FUNCTIONALITY =================================================
-
-
+// ================== GETTING UPDATED SKILLS FROM MULTISELECT FUNCTIONALITY ==============================================
 function updateSkills() {
-    const updateForm = document.querySelector("#update-form")
+    const updateForm = document.getElementById("update-form")
     const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
     let skillIdArr = [];
     let skillNameArr = [];
@@ -572,72 +469,91 @@ function updateSkills() {
         })
     });
     return (skillIdArr);
-
 }
 
-sortEmployeeData()
-
-// =================================================== SORTING THE TABLE BY ID AND NAME =====================================================================
+// ================================== SORTING THE TABLE BY ID AND NAME ============================================
 function sortEmployeeData() {
     let sortData = document.getElementById("sort-dropdown")
     let selectValue = sortData.value;
     checkSelect();
-    sortData.addEventListener("change", checkSelect); 
+    sortData.addEventListener("change", checkSelect);
 
     function checkSelect() {
         selectValue = sortData.value;
         selectValue == "1" ? sortById() : sortByName();
-    } 
+    }
 }
-
 
 function sortById() {
 
     let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
     tableDataJson = tableDataJson.sort((e1, e2) => {
         return (e1.employee_id - e2.employee_id);
-    }) 
+    })
     localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
     let element = document.getElementById("table-body-container");
-    while (element.firstChild) {
-         element.removeChild(element.firstChild);
-    }
-    listTables();
+    reloadTable();
 }
 
 function sortByName() {
     let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
-    tableDataJson = tableDataJson.sort((e1,e2) => {
+    tableDataJson = tableDataJson.sort((e1, e2) => {
         return ((e1.employee_name.toLowerCase()).charCodeAt(0) - (e2.employee_name.toLowerCase()).charCodeAt(0));
-    }) 
+    })
     localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
-    let element = document.getElementById("table-body-container");
-    while (element.firstChild) {
-         element.removeChild(element.firstChild);
-    }
-    listTables();
+    reloadTable()
 }
 
-
-
 // ============================================== FILTERING BY SKILLS =================================================================
- const searchInput = document.querySelector("#filter-select");
-    searchInput.addEventListener("keyup", function(event) {
+function filterTable() {
+    const searchInput = document.getElementById("filter-select");
+    searchInput.addEventListener("keyup", function (event) {
         const rows = document.querySelectorAll("#table-body-container tr");
-        
-    
         const skillSearch = event.target.value;
         rows.forEach(row => {
             let isThere = false;
             let spans = row.querySelectorAll(".skillSpan")
             spans.forEach(span => {
-                console.log(span.textContent)
                 span.textContent.toLocaleLowerCase().startsWith(skillSearch.toLowerCase()) && (isThere = true)
-               
             })
-                 isThere ? row.style.display = "" : row.style.display = "none";
+            isThere ? row.style.display = "" : row.style.display = "none";
         });
     });
+}
+filterTable();
 
+// ================================================= VALIDATING THE ADDFORM INPUTS =====================================
+function formValidation(mailVal, nameVal) {
 
+    let atSymbol = mailVal.indexOf("@");
+    let dot = mailVal.indexOf(".");
 
+    if ((nameVal.length < 1) || (nameVal.startsWith(" "))) {
+        alert("Enter a valid name")
+        return false;
+    }
+    else if (dot <= atSymbol + 2) {
+        alert("Enter valid email id");
+        return false;
+    }
+    else if (dot === mailVal.length - 1) {
+        alert("Enter valid email id");
+        return false;
+    }
+    else if (atSymbol < 1) {
+        alert("Enter valid email id");
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+// ============================== TABLE RELOAD ====================================================
+function reloadTable() {
+    let element = document.getElementById("table-body-container");
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+    listTables();
+}
