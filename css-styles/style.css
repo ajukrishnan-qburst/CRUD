@@ -568,7 +568,7 @@ h6 {
   border: 2px solid black;
   font-size: 16px;
   font-family: "pop-bold";
-  margin: 0 auto;
+  margin: 20px auto 10px auto;
   padding: 5px 20px;
 }
 
@@ -589,9 +589,8 @@ h6 {
   text-decoration: none;
   cursor: pointer;
 }
-.form{
-   display: flex;
-  flex-wrap: wrap;
+.form {
+  display: flex;
   justify-content: center;
   padding: 15px 10px;
 }
@@ -599,17 +598,24 @@ h6 {
 .input-wrapper {
   display: inline-grid;
   padding: 10px 5px 0px 5px;
-  margin-top: 15px
+  margin-top: 15px;
+  max-width: 300px;
+  width: 100%;
+}
+
+#update-input-wrapper input:focus, #add-input-wrapper input:focus{
+  border: 2px solid #25d366;
 }
 
 .modal-label {
   padding: 20px 10px;
   line-height: 20px;
   cursor: pointer;
+  width: 105%;
 }
 
 .modal-input {
-  width: 360px;
+  width: 300px;
   height: 40px;
   padding: 5px 20px;
   margin-bottom: 25px;
@@ -617,6 +623,7 @@ h6 {
   font-size: 14px;
   font-family: "pop-normal";
   color: #000;
+  border-radius: 6px;
 }
 
 .modal-content {
@@ -648,6 +655,15 @@ h6 {
   font-family: "pop-bold";
   margin-top: 8px;
 }
+
+ .red_star {
+        color: red;
+    }
+
+  #name-input:focus-within + .add-label{
+    color: #25d366;
+  }
+
 
 /*-------------------------------------
         5. HEADER SECTION
@@ -690,11 +706,12 @@ body {
   background-color: #003366;
   font-size: 20px;
   padding: 10px 10px;
-  color: #FFFF00;
+  color: #ffff00;
   font-family: "pop-bold";
+  border-radius: 5px;
 }
-.add:hover{
-  box-shadow: -1px 2px 5px 5px #FFFF00;
+.add:hover {
+  box-shadow: -1px 2px 5px 5px #ffff00;
 }
 
 .sort-filter-container {
@@ -704,26 +721,27 @@ body {
 .sort-filter-container input {
   cursor: pointer;
   padding: 7px 8px;
-  color: #000;
   font-family: "pop-normal";
   width: 200px;
   background-color: #003366;
   color: #ffff00;
+  border-radius: 5px;
 }
 
 .sort-filter-container select {
   cursor: pointer;
   padding: 10px 5px;
-  color: #000;
   font-family: "pop-normal";
   background-color: #003366;
   color: #ffff00;
+  border-radius: 5px;
 }
 
 .label {
   color: #000;
   font-size: 25px;
   font-family: "pop-bold";
+  cursor: pointer;
 }
 
 .datalist {
@@ -733,7 +751,7 @@ body {
 /* ---------------------TABLE----------------------- */
 #employee-table-container {
   padding: 15px 10px;
-  display: flex;
+  display: block;
   justify-content: center;
   max-width: 1200px;
   width: 100%;
@@ -777,28 +795,43 @@ table {
   border-left: 3px solid black;
   border-right: 2px solid black;
 }
-
-.table tr{
-  text-align: center;
-  background-color: #003366;
-  color: #FFFF00;
-  font-family: "pop-normal";
+#table-body-container{
+overflow-y: scroll;
 }
 
-tbody tr:hover {
-  background-color: white;
-  color: #000;
-  font-size: large;
+#table-body-container::-webkit-scrollbar{
+display: none;
+}
+
+tbody tr {
+  text-align: left;
+  background-color: #003366;
+  color: #ffff00;
+  font-family: "pop-normal";
+}
+.id-column {
+  text-align: right ;
+}
+
+.action-column {
+  text-align: center ;
 }
 
 td {
   border: 2px solid black;
-  padding: 10px 0px;
+  padding: 10px 10px;
+}
+
+tbody tr:hover{
+  background-color: #fff;
+  color: #000;
+  font-weight: 700;
 }
 
 .fa-trash {
   font-size: 25px;
   cursor: pointer;
+  margin: 0 30px ;
 }
 
 .fa-trash:hover {
@@ -806,13 +839,25 @@ td {
 }
 
 .fa-pen-to-square {
-  padding-right: 25px;
   font-size: 25px;
   cursor: pointer;
+  margin: 0 30px ;
 }
 
 .fa-pen-to-square:hover {
   color: green;
+}
+
+
+#error-div{
+border: 5px dashed red;
+color: #003366;
+display: none;
+font-size: 40px;
+margin: 50px auto;
+text-align: center;
+width: 750px;
+
 }
 
 /* --------------------ADD MODAL BOX--------------------------------------------- */
@@ -827,10 +872,8 @@ td {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.9);
 }
-
 
 /* ------------------------------UPDATE MODAL BOX------------------------------------ */
 
@@ -838,14 +881,14 @@ td {
   display: none;
   position: fixed;
   z-index: 1;
-  padding-top: 50px;
+  padding-top: 15px;
+  padding-bottom: 15px;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.9);
 }
 
 /* --------------------------------CONFIRMATION BOX------------------------------------------- */
@@ -860,8 +903,7 @@ td {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.9);
 }
 
 .box-content {
@@ -871,6 +913,10 @@ td {
   border: 1px solid #000;
   width: 35%;
   border-radius: 25px;
+}
+
+.box-msg{
+  padding-top: 20px;
 }
 
 .box-msg h3 {
@@ -894,7 +940,6 @@ td {
 }
 
 .fa-xmark:hover {
-  font-weight: 900;
   color: green;
 }
 
@@ -902,10 +947,6 @@ td {
   font-size: 50px;
   font-weight: 700;
   background-color: white;
-}
-
-.fa-check:hover {
-  font-weight: 900;
   color: red;
 }
 
@@ -921,8 +962,7 @@ td {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.9);
 }
 
 /* -------------------------------UPDATE BOX------------------------------------- */
@@ -936,67 +976,62 @@ td {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.9);
 }
-
-
 
 /* ------------------------------MULTISELECT SKILLS BOX ------------------------------- */
-.container{
-  overflow-y: scroll;
-  overflow-x: hidden;
-}
-
-.container::-webkit-scrollbar {
-  display: none;
-}
-
 .tag-container {
- padding: 5px 5px;
-  border: 1px solid black;
-  width: 360px;
+  padding: 5px 5px;
+  border: 2px solid black;
+  width: 300px;
   margin: 5px 0;
   align-items: center;
-  background:#f2f2f2;
-  border-radius: 5px;
+  background: #f2f2f2;
+  border-radius: 7px;
   display: flex;
   flex-wrap: wrap;
-  
 }
 
-.tag{
-  border: 1px solid black;
+.tag {
+  border: 1px solid #25d362;
   margin: 5px;
   align-items: center;
-  background:#f2f2f2;
+  background: #f2f2f2;
   border-radius: 5px;
   display: flex;
   cursor: pointer;
-
 }
 
-.tag span{
-    font-size:larger;
-    color: #000;
-    font-family: 700;
+.tag span {
+  font-size: larger;
+  color: #000;
+  font-family: 700;
 }
 
-.close
-{
+.close {
   font-size: medium;
-    margin: 5px 5px;
+  margin: 5px 5px;
 }
 
-.tag-container input{
-  flex:1;
-  font-size:16px;
-  padding:5px;
+.tag-container input {
+  flex: 1;
+  font-size: 16px;
+  padding: 5px;
   outline: none;
   border: 0;
   margin-bottom: 0px;
-} 
+  width: 280px;
+  max-width: 100%;
+}
 
 #skill-add {
+  width: 250px;
   display: none;
+}
+
+#skill-add input {
+  display: none;
+}
+#skill-add label {
+  cursor: pointer;
 }
