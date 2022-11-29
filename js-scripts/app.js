@@ -1,47 +1,45 @@
-// localStorage.clear();
 // ================================== IDCOUNT INTIAL VALUE ASSIGNMENT ================================================================
-initIdCount();
+
 function initIdCount() {
     if (!(localStorage.getItem("idCountJson"))) {
-        let idCount = 6;
+        const tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
+        const idArr = tableDataJson.map(emp => emp.employee_id);
+        const idCount = Math.max(...idArr) + 1;
         localStorage.setItem("idCountJson", JSON.stringify(idCount));
     }
 }
 
-// =============================== FETCHING DATA FROM employee_details.json FILE ======================================================
-const getTableData = () => {
-    fetch('json-files/employee_details.json')
-        .then(response => response.json())
-        .then(data => {
-            localStorage.setItem("employeeData", JSON.stringify(data));
-            sortEmployeeData()
-        });
+// ============================== FETCHING DATA FROM employee_details.json FILE ======================================================
+const getTableData = async () => {
+    let response = await fetch('json-files/employee_details.json');
+    response = await response.json();
+    localStorage.setItem("employeeData", JSON.stringify(response));
+    initIdCount();
+    sortEmployeeData();
 }
 
 // =============================== FETCHING DATA FROM skills.json FILE =================================================================
-const getSkillsData = () => {
-    fetch('json-files/skills.json')
-        .then(response => response.json())
-        .then(data => {
-            localStorage.setItem("skillsData", JSON.stringify(data));
-            skillDataList()
-        });
+const getSkillsData = async () => {
+    let response = await fetch('json-files/skills.json');
+    response = await response.json();
+    localStorage.setItem("skillsData", JSON.stringify(response));
+    skillDataList();
 }
 
 // ===================== CONDITION TO CHECK WHETHER THE LOCALSTORAGE IS EMPTY OR NOT =======================================================
-initData();
 
-function initData() {
+async function initData() {
     if (!(localStorage.getItem("employeeData"))) {
-        getTableData();
-        getSkillsData();
+        await getSkillsData();
+        await getTableData();
     }
     else {
         listTables();
         sortEmployeeData();
+        skillDataList();
     }
 }
-
+initData();
 // =============================== CREATING OPTION TAG FROM THE SKILLS LIST FETCHED =====================================================
 function skillDataList() {
     const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
@@ -53,19 +51,19 @@ function skillDataList() {
         skillList.appendChild(options)
     })
 }
-skillDataList()
+
 
 // =============================== LISTING THE JSON DATA INTO TABLE =======================================================================
 function listTables() {
     const tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
+    if (tableDataJson) {
+        tableDataJson.forEach((rowData) => {
+            rowCreation(rowData)
+            updateModalBox();
+            deleteMsgBox();
 
-    tableDataJson.forEach((rowData) => {
-
-        rowCreation(rowData)
-        updateModalBox();
-        deleteMsgBox();
-
-    });
+        });
+    }
 }
 
 // =================================== ROW CREATION ======================================================================================
@@ -77,10 +75,11 @@ function rowCreation(rowData) {
     let skillRow = document.createElement("td");
     skillRow.setAttribute("class", "skillsBox");
     let buttonRow = document.createElement("td");
+    buttonRow.setAttribute("class", "action-column")
     let updateBtn = document.createElement("i");
     let deleteBtn = document.createElement("i");
 
-    tableRow.innerHTML = `<td>${rowData.employee_id}</td>
+    tableRow.innerHTML = `<td class="id-column">${rowData.employee_id}</td>
         <td>${rowData.employee_name}</td>
         <td>${rowData.designation}</td>
         <td>${rowData.email}</td>`;
@@ -88,24 +87,26 @@ function rowCreation(rowData) {
     rowData.skills.forEach((skillData) => {
         let spanTag = document.createElement("span");
         let length = rowData.skills.length;
-        if ((length - 1) == rowData.skills.indexOf(skillData)) {
-            skillsDataJson.forEach((data) => {
-                skillData == data.skill_id && (spanTag.innerHTML = data.skill_name);
-            });
-        }
-        else {
-            skillsDataJson.forEach((data) => {
-                skillData == data.skill_id && (spanTag.innerHTML = `${data.skill_name},`);
-            });
+        if (skillsDataJson) {
+            if ((length - 1) == rowData.skills.indexOf(skillData)) {
+                skillsDataJson.forEach((data) => {
+                    skillData == data.skill_id && (spanTag.innerHTML = data.skill_name);
+                });
+            }
+            else {
+                skillsDataJson.forEach((data) => {
+                    skillData == data.skill_id && (spanTag.innerHTML = `${data.skill_name},`);
+                });
+            }
         }
         spanTag.setAttribute("class", "skillSpan");
         skillRow.appendChild(spanTag);
     });
-
     updateBtn.setAttribute("class", "update-button fa-solid fa-pen-to-square");
     updateBtn.setAttribute("data-id", `${rowData.employee_id}`);
     deleteBtn.setAttribute("class", "delete-button fa-solid fa-trash");
     deleteBtn.setAttribute("data-id", `${rowData.employee_id}`);
+    deleteBtn.setAttribute("onclick", "deleteEmployee(this)")
 
     tableRow.appendChild(skillRow);
     buttonRow.appendChild(updateBtn);
@@ -144,6 +145,7 @@ function addModalBox() {
         let idCount = JSON.parse(localStorage.getItem("idCountJson"));
         idCount += 1
         localStorage.setItem("idCountJson", JSON.stringify(idCount));
+        sortEmployeeData();
     });
 
     modal.addEventListener("click", (event) => {
@@ -197,21 +199,15 @@ function deleteMsgBox() {
     const closeBtn = modal.querySelector(".close-btn");
     const noBtn = document.getElementById("no-btn");
     const yesBtn = document.getElementById("yes-btn");
-    deleteBtn.forEach(item => {
-        item.addEventListener("click", () => {
-            modal.style.display = "block";
-            let id = item.getAttribute("data-id")
-            deleteEmployee(id);
-        });
-    });
-    closeBtn.addEventListener("click", () => {
-        modal.style.display = "none"
 
+    closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
     });
 
     noBtn.addEventListener("click", () => {
-        modal.style.display = "none"
+        modal.style.display = "none";
     });
+
     yesBtn.addEventListener("click", () => {
         modal.style.display = "none"
     });
@@ -233,6 +229,7 @@ function addEmployees(ev) {
     const tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
     const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
     const successModal = document.getElementById("success-box")
+    const errorDiv = document.getElementById("error-div");
     const modal = document.getElementById("add-modal")
     const mailVal = document.getElementById("email-input").value;
     const nameVal = document.getElementById("name-input").value;
@@ -242,7 +239,7 @@ function addEmployees(ev) {
         ev.preventDefault();
         let skillIdArr = [];
         let skillNameArr = [];
-        document.querySelectorAll(".tagSpan").forEach(item => {
+        modal.querySelectorAll(".tagSpan").forEach(item => {
             let value = item.getAttribute('data-id')
             skillNameArr.push(value)
         })
@@ -254,6 +251,7 @@ function addEmployees(ev) {
             })
 
         });
+
         let employee = {
             employee_id: document.getElementById("id-input").value,
             employee_name: document.getElementById("name-input").value,
@@ -262,13 +260,15 @@ function addEmployees(ev) {
             email: document.getElementById("email-input").value,
             skills: skillIdArr
         }
-
+        skillIdArr = [];
+        skillNameArr = [];
         tableDataJson.push(employee);
         localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
         rowCreation(employee);
         addForm.reset();
         modal.style.display = "none";
         successModal.style.display = "block";
+        errorDiv.style.display = "none"
     }
 }
 
@@ -349,7 +349,7 @@ function newSkillAdd(value) {
     let questionMark = document.getElementById("skill-add")
     let questionForm = document.querySelector("#skill-add input")
     let valueObj = {};
-    questionMark.style.display = "block"
+    questionMark.style.display = "inline-flex"
     questionMark.addEventListener("change", function () {
         const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
 
@@ -380,31 +380,38 @@ function newSkillAdd(value) {
 
 // ================================ EMPLOYEEE ROW DELEETION ============================================================================
 function deleteEmployee(id) {
-    let deleteBtn = document.getElementById("yes-btn");
-    deleteBtn.addEventListener("click", () => {
-        let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
-        tableDataJson.forEach(rowData => {
-            if (id == rowData.employee_id) {
-                const index = tableDataJson.indexOf(rowData)
-                tableDataJson.splice(index, 1);
-                localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
-                rowDeletion(index);
-            }
-        });
-    })
+    const modal = document.getElementById("confirmation-box");
+    let idToDelete = id.getAttribute("data-id");
+    const deleteBtn = document.getElementById("yes-btn");
+    modal.style.display = "block";
+    deleteBtn.onclick = function () {removeEmp(idToDelete)};
 }
 
+function removeEmp(id) {
+    let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
+    tableDataJson.forEach(rowData => {
+        if (id == rowData.employee_id) {
+            const index = tableDataJson.indexOf(rowData)
+            tableDataJson.splice(index, 1);
+            localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
+            rowDeletion(index);
+        }
+    });
+}
 
 function rowDeletion(index) {
-    const rows = document.querySelectorAll("#table-body-container tr")
+    let rows = document.querySelectorAll("#table-body-container tr")
+    const errorDiv = document.getElementById("error-div");
     let i = 0;
     rows.forEach(row => {
         i++
-        if (index == i - 1) {
-            row.remove()
-        }
+        index == i - 1 && row.remove();
     })
+    rows = document.querySelectorAll("#table-body-container tr");
+    rows.length === 0 && (errorDiv.style.display = "block");
+
 }
+
 // ========================== VIEW AND UPDATE EXISTING DATA OF AN EMPLOYEEE  ==========================================================
 function employeeDataDisplay(id) {
     let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
@@ -434,7 +441,7 @@ function storeUpdatedValue() {
                 let updatedSkills = updateSkills();
                 rowData.employee_name = document.getElementById("name-input-u").value,
                     rowData.designation = document.getElementById("designation-input-u").value,
-                    rowData.experience = document.getElementById("experience-input-u").value,
+                    rowData.experience = document.getElementById("experience-input-u").value + "Years",
                     rowData.email = document.getElementById("email-input-u").value,
                     rowData.skills = updatedSkills;
             }
@@ -520,20 +527,20 @@ function skillsView(id) {
 function updateSkills() {
     const updateForm = document.getElementById("update-form")
     const skillsDataJson = JSON.parse(localStorage.getItem("skillsData"));
-    let skillIdArr = [];
-    let skillNameArr = [];
+    let skillIdArrUpdate = [];
+    let skillNameArrUpdate = [];
     updateForm.querySelectorAll(".tagSpan").forEach(item => {
         let value = item.getAttribute('data-id')
-        skillNameArr.push(value)
+        skillNameArrUpdate.push(value)
     })
     skillsDataJson.forEach(skill => {
-        skillNameArr.forEach(skills => {
+        skillNameArrUpdate.forEach(skills => {
             if (skills === skill.skill_name) {
-                skillIdArr.push(skill.skill_id)
+                skillIdArrUpdate.push(skill.skill_id)
             }
         })
     });
-    return (skillIdArr);
+    return (skillIdArrUpdate);
 }
 
 // ================================== SORTING THE TABLE BY ID AND NAME =================================================================
@@ -556,14 +563,13 @@ function sortById() {
         return (e1.employee_id - e2.employee_id);
     })
     localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
-    let element = document.getElementById("table-body-container");
     reloadTable();
 }
 
 function sortByName() {
     let tableDataJson = JSON.parse(localStorage.getItem("employeeData"));
     tableDataJson = tableDataJson.sort((e1, e2) => {
-        return ((e1.employee_name.toLowerCase()).charCodeAt(0) - (e2.employee_name.toLowerCase()).charCodeAt(0));
+        return e1.employee_name.toLowerCase().localeCompare(e2.employee_name.toLowerCase());
     })
     localStorage.setItem("employeeData", JSON.stringify(tableDataJson));
     reloadTable()
@@ -572,23 +578,36 @@ function sortByName() {
 // ============================================== FILTERING BY SKILLS =================================================================
 function filterTable() {
     const searchInput = document.getElementById("filter-select")
+    const errorDiv = document.getElementById("error-div");
     let skillSearch;
     searchInput.addEventListener("keyup", function (event) {
-        console.log(event.target.value)
         skillSearch = event.target.value;
         if (!(skillSearch.startsWith(" ")) && !(skillSearch === "")) {
+            let rowCount = false;
             const rows = document.querySelectorAll("#table-body-container tr");
             rows.forEach(row => {
                 let isThere = false;
                 let spans = row.querySelectorAll(".skillSpan")
                 spans.forEach(span => {
-                    span.textContent.toLocaleLowerCase().startsWith(skillSearch.toLowerCase()) && (isThere = true)
+                    if (span.textContent.toLocaleLowerCase().startsWith(skillSearch.toLowerCase())) {
+                        isThere = true;
+                        errorDiv.style.display = "none"
+                    }
                 })
                 isThere ? row.style.display = "" : row.style.display = "none";
             });
+            rows.forEach(row => {
+                if (row.style.display === "") {
+                    rowCount = true;
+                }
+            });
+            if (!rowCount) {
+                errorDiv.style.display = "block"
+            }
         }
         else {
             reloadTable()
+            errorDiv.style.display = "none"
         }
     });
 }
@@ -596,35 +615,20 @@ filterTable();
 
 // ========================================== VALIDATING THE ADDFORM INPUTS ==========================================================
 function formValidation(mailVal, nameVal) {
+    const regExpEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/g;
+    const regExpName = /\d+$/g;
 
-    let atSymbol = mailVal.indexOf("@");
-    let dot = mailVal.indexOf(".");
-    let nameVals = nameVal.match(/\d+/g);
-
-    if ((nameVal.length < 1) || (nameVal.startsWith(" "))) {
-        alert("Enter a valid name")
+    if (nameVal == "" || nameVal.startsWith(" ") || regExpName.test(nameVal)) {
+        window.alert("Please enter valid name.");
         return false;
     }
-    else if (nameVals != null) {
-        alert("Enter a valid name with no numeric values")
+    if (mailVal == "" || mailVal.startsWith(" ") || !regExpEmail.test(mailVal)) {
+        window.alert("Please enter a valid e-mail address.");
         return false;
     }
-    else if (dot <= atSymbol + 2) {
-        alert("Enter valid email id");
-        return false;
-    }
-    else if (dot === mailVal.length - 1) {
-        alert("Enter valid email id");
-        return false;
-    }
-    else if (atSymbol < 1) {
-        alert("Enter valid email id");
-        return false;
-    }
-    else {
-        return true;
-    }
+    return true;
 }
+
 
 // ====================================== TABLE RELOAD ===============================================================================
 function reloadTable() {
